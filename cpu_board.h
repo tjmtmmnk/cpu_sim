@@ -59,21 +59,21 @@ typedef unsigned char    Bit;
 #define _IN  0x18
 #define _RCF 0x20
 #define _SCF 0x28
-#define _LD  0b0110
-#define _ST  0b0111
-#define _ADD 0b1011
-#define _ADC 0b1001
-#define _SUB 0b1010
-#define _SBC 0b1000
-#define _CMP 0b1111
-#define _AND 0b1110
-#define _OR  0b1101
-#define _EOR 0b1100
-#define _SSM 0b1000
-#define _RSM 0b1000
-#define _BBC 0b0011
+#define _LD  0x60
+#define _ST  0x70
+#define _ADD 0xb0
+#define _ADC 0x90
+#define _SUB 0xa0
+#define _SBC 0x80
+#define _CMP 0xf0
+#define _AND 0xe0
+#define _OR  0xd0
+#define _EOR 0xc0
+#define _SSM 0x40
+#define _RSM 0x40
+#define _BBC 0x03
 #define _JAL 0x0a
-#define _JR 0x0b
+#define _JR  0x0b
 
 
 
@@ -90,7 +90,7 @@ typedef struct cpuboard {
     Uword acc;
     Uword ix;
     Uword ir[2];
-    Uword reg;
+    Uword *reg;
     Bit   cf, vf, nf, zf;
     IOBuf *ibuf;
     IOBuf *obuf;

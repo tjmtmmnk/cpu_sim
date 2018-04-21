@@ -72,7 +72,9 @@ int init_cpu(void)
 
 void initializeBoard(Cpub *board){
     board->pc = PROGRAM_MEMORY_FRONT;
-    board->dmem_add = (Uword)DATA_MEMORY_FRONT;
+    for (int i=0; i<MEMORY_SIZE;i++) {
+        board->mem[i] = 0x00;
+    }
 }
 
 /*=============================================================================
@@ -80,7 +82,6 @@ void initializeBoard(Cpub *board){
  *===========================================================================*/
 int main()
 {
-    
     char    cmdline[CL_BUFF_SIZE];    /* command line buffer */
     char    cmd[CL_BUFF_SIZE], arg1[CL_BUFF_SIZE], arg2[CL_BUFF_SIZE], dummy[CL_BUFF_SIZE];
     Cpub    *board;            /* current CPU board state */
@@ -231,9 +232,7 @@ void display_regs(Cpub *board)
             "   cf=%d vf=%x nf=%x zf=%x\n",
             DispRegVec(board->acc),DispRegVec(board->ix),
             board->cf,board->vf,board->nf,board->zf);
-    fprintf(stderr,"\tibuf=%x:0x%02x(%d,%u)    obuf=%x:0x%02x(%d,%u)\n",
-            board->ibuf->flag,DispRegVec(board->ibuf->buf),
-            board->obuf->flag,DispRegVec(board->obuf->buf));
+    fprintf(stderr,"\tibuf=%x:0x%02x(%d,%u)\n",board->ibuf->flag,DispRegVec(board->ibuf->buf));
 }
 
 

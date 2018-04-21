@@ -18,6 +18,7 @@ void fetch(Cpub *board){
         return;
     }
     board->ir[0] = board->mem[board->pc++];
+    printf("pc : %d\n",board->pc);
 }
 
 void setCF(Cpub *board, int flag){
@@ -108,30 +109,37 @@ int selectResister(Cpub *board, int load_register){
     int is_continue = RUN_STEP;
     switch (load_register) {
         case ACC:
-            board->reg = board->acc;
+            printf("ACC load mode\n");
+            board->reg = &board->acc;
             break;
         case IX:
-            board->reg = board->ix;
+            printf("IX load mode\n");
+            board->reg = &board->ix;
             break;
         case IMMEDIATE:
+            printf("IMMEDIATE load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = board->ir[1];
+            board->reg = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
             break;
         case P_ABSOLUTLY:
+            printf("P_ABSOLUTLY load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = board->ir[1];
+            board->reg = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
             break;
         case D_ABSOLUTLY:
+            printf("D_ABSOLUTLY load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = board->ir[1];
+            board->reg = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
             break;
         case P_INDIRECTION:
+            printf("P_INDIRECTION load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = board->ir[1] + board->ix;
+            board->reg = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
             break;
         case D_INDIRECTION:
+            printf("D_INDIRECTION load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = board->ir[1] + board->ix;
+            board->reg = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
             break;
         default:
             fprintf(stderr, "None resister selected!\n");
@@ -153,44 +161,68 @@ int step(Cpub *board)
     board->load_register = board->ir[0] & 0x07; //get low 3bit
     
     if((board->ir[0] & 0xf8) == _NOP){
+        printf("NOP mode\n");
         NOP(board);
     } else if((board->ir[0] & 0xfc) == _HLT){
+        printf("HLT mode\n");
         HLT(board);
     } else if((board->ir[0] & 0xf8) == _OUT){
+        printf("OUT mode\n");
         OUT(board);
     } else if((board->ir[0] & 0xf8) == _IN){
+        printf("IN mode\n");
         IN(board);
     } else if((board->ir[0] & 0xf8) == _RCF){
+        printf("RCF mode\n");
         RCF(board);
     } else if((board->ir[0] & 0xf8) == _SCF){
+        printf("SCF mode\n");
         SCF(board);
-    } else if((board->ir[0] & 0xf) == _ADD){
+    } else if((board->ir[0] & 0xf0) == _ADD){
+        printf("ADD mode\n");
         ADD(board);
-    } else if((board->ir[0] & 0xf) == _ADC){
+    } else if((board->ir[0] & 0xf0) == _ADC){
+        printf("ADC mode\n");
         ADC(board);
-    } else if((board->ir[0] & 0xf) == _SUB){
+    } else if((board->ir[0] & 0xf0) == _LD){
+        printf("LD mode\n");
+        LD(board);
+    }  else if((board->ir[0] & 0xf0) == _ST){
+        printf("ST mode\n");
+        ST(board);
+    }  else if((board->ir[0] & 0xf0) == _SUB){
+        printf("SUB mode\n");
         SUB(board);
-    } else if((board->ir[0] & 0xf) == _SBC){
+    } else if((board->ir[0] & 0xf0) == _SBC){
+        printf("SBC mode\n");
         SBC(board);
-    } else if((board->ir[0] & 0xf) == _CMP){
+    } else if((board->ir[0] & 0xf0) == _CMP){
+        printf("CMP mode\n");
         CMP(board);
-    } else if((board->ir[0] & 0xf) == _AND){
+    } else if((board->ir[0] & 0xf0) == _AND){
+        printf("AND mode\n");
         AND(board);
-    } else if((board->ir[0] & 0xf) == _OR){
+    } else if((board->ir[0] & 0xf0) == _OR){
+        printf("OR mode\n");
         OR(board);
-    } else if((board->ir[0] & 0xf) == _EOR){
+    } else if((board->ir[0] & 0xf0) == _EOR){
+        printf("EOR mode\n");
         EOR(board);
-    } else if((board->ir[0] & 0xf) == _SSM){
+    } else if(((board->ir[0] & 0xf0) == _SSM) && ((board->ir[0] & 0x04) == 0)){
+        printf("SSM mode\n");
         Ssm(board);
-    } else if((board->ir[0] & 0xf) == _RSM){
+    } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0] & 0x04) == 1)){
+        printf("RSM mode\n");
         Rsm(board);
-    } else if((board->ir[0] & 0xf) == _BBC){
+    } else if((board->ir[0] & 0xf0) == _BBC){
+        printf("BBC mode\n");
         Bbc(board);
     } /*else if((board->ir[0] & 0xff) == _JAL){
         JAL(board);
     } else if((board->ir[0] & 0xff) == _JR){
         JR(board);
     } */else{
+        printf("ir[0] : %d\n", board->ir[0]);
         fprintf(stderr, "None command error!\n");
     }
     return RUN_HALT;
@@ -233,171 +265,179 @@ int Bbc(Cpub *board){
 }
 
 int Ssm(Cpub *board){
-    //    int shift_mode = board->ir[0] & 0x03; //get low 2bit
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
     int msb = *p_register & 0x80; //get most significant bit
+    printf("msb : %d\n",msb);
     
     switch (board->shift_mode) {
         case RA:
+            printf("RA mode\n");
             *p_register = (int)pow(*p_register, -msb);
             break;
         case LA:
+            printf("LA mode\n");
             *p_register = (int)pow(*p_register, msb);
             break;
         case RL:
-            *p_register >> msb;
+            printf("RL mode\n");
+            *p_register = *p_register >> 1;
             break;
         case LL:
-            *p_register << msb;
+            printf("LL mode\n");
+            *p_register = *p_register << 1;
             break;
         default:
             fprintf(stderr, "None shift mode!\n");
             break;
     }
-    board->nf = (*p_register < 0  ? 1 : 0);
-    board->zf = (*p_register == 0 ? 1 : 0);
-    if(((msb == 1) && (*p_register < 0)) || ((msb == 0) && (*p_register > 0xff))){
-        board->vf = 1;
-    } else{
-        board->vf = 0;
-    }
+
+    setCF(board, *p_register);
+    setNF(board, *p_register);
+    setVF(board, *p_register);
+    setZF(board, *p_register);
     
     return RUN_STEP;
 }
 
 int Rsm(Cpub *board){
-    //    int shift_mode = board->ir[0] & 0x03; //get low 2bit
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
     int msb = *p_register & 0x80; //get most significant bit
     
     switch (board->shift_mode) {
         case RA:
+            printf("RA mode\n");
             *p_register = (int)pow(*p_register, -msb);
             break;
         case LA:
+            printf("LA mode\n");
             *p_register = (int)pow(*p_register, msb);
             break;
         case RL:
-            *p_register >> msb;
+            printf("RL mode\n");
+            *p_register = *p_register >> 1;
             break;
         case LL:
-            *p_register << msb;
+            printf("LL mode\n");
+            *p_register = *p_register << 1;
             break;
         default:
             fprintf(stderr, "None shift mode!\n");
             break;
     }
-    board->nf = (*p_register < 0  ? 1 : 0);
-    board->zf = (*p_register == 0 ? 1 : 0);
+    
     setCF(board, *p_register);
+    setNF(board, *p_register);
     setVF(board, *p_register);
+    setZF(board, *p_register);
+    
     return RUN_STEP;
 }
 
-int LD(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
+int LD(Cpub *board){ //多分ok
     if(!selectResister(board, board->load_register)){return RUN_HALT;}
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register = board->reg;
+    *p_register = *board->reg;
     return RUN_STEP;
 }
 
-int ST(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
+int ST(Cpub *board){ //ok
     if(!selectResister(board, board->load_register)){return RUN_HALT;}
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
-    board->reg = *p_register;
+    *board->reg = *p_register;
     return RUN_STEP;
 }
 
-int ADD(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
+int ADD(Cpub *board){ //ok
     if(!selectResister(board, board->load_register)){return RUN_HALT;}
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register += board->reg;
-    return RUN_STEP;
-}
-
-int ADC(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register = *p_register + board->reg + board->cf;
-    return RUN_STEP;
-}
-
-int SUB(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register -= board->reg;
-    return RUN_STEP;
-}
-
-int SBC(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register = *p_register - board->reg - board->cf;
-    return RUN_STEP;
-}
-
-int CMP(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register -= board->reg;
+    *p_register += *board->reg;
     setVF(board, *p_register);
     setNF(board, *p_register);
     setZF(board, *p_register);
     return RUN_STEP;
 }
 
-int AND(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
+int ADC(Cpub *board){ //ok
     if(!selectResister(board, board->load_register)){return RUN_HALT;}
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register &= board->reg;
+    *p_register = *p_register + *board->reg + board->cf;
+    setCF(board, *p_register);
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
     return RUN_STEP;
 }
 
-int OR(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
+int SUB(Cpub *board){ //ok
     if(!selectResister(board, board->load_register)){return RUN_HALT;}
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register |= board->reg;
+    *p_register -= *board->reg;
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
     return RUN_STEP;
 }
 
-int EOR(Cpub *board){
-    //    int register_mode = board->ir[0] & 0x08; //get 4th bit
-    //    int load_register = board->ir[0] & 0x07; //get low 3bit
+int SBC(Cpub *board){ //ok
     if(!selectResister(board, board->load_register)){return RUN_HALT;}
     Uword *p_register;
     p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register ^= board->reg;
+    *p_register = *p_register - *board->reg - board->cf;
+    setCF(board, *p_register);
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
+    return RUN_STEP;
+}
+
+int CMP(Cpub *board){ //ok
+    if(!selectResister(board, board->load_register)){return RUN_HALT;}
+    Uword *p_register;
+    p_register = (board->register_mode ? &board->ix : &board->acc);
+    *p_register -= *board->reg;
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
+    return RUN_STEP;
+}
+
+int AND(Cpub *board){ //ok
+    if(!selectResister(board, board->load_register)){return RUN_HALT;}
+    Uword *p_register;
+    p_register = (board->register_mode ? &board->ix : &board->acc);
+    *p_register &= *board->reg;
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
+    return RUN_STEP;
+}
+
+int OR(Cpub *board){ //ok
+    if(!selectResister(board, board->load_register)){return RUN_HALT;}
+    Uword *p_register;
+    p_register = (board->register_mode ? &board->ix : &board->acc);
+    *p_register |= *board->reg;
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
+    return RUN_STEP;
+}
+
+int EOR(Cpub *board){ //ok
+    if(!selectResister(board, board->load_register)){return RUN_HALT;}
+    Uword *p_register;
+    p_register = (board->register_mode ? &board->ix : &board->acc);
+    *p_register ^= *board->reg;
+    setVF(board, *p_register);
+    setNF(board, *p_register);
+    setZF(board, *p_register);
     return RUN_STEP;
 }
 
