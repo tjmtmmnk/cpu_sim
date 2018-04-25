@@ -21,24 +21,55 @@ void fetch(Cpub *board){
     printf("pc : %d\n",board->pc);
 }
 
-void setCF(Cpub *board, int flag){
-    if((unsigned int)flag > 255 || ((signed int)flag > 127 || (signed int)flag < -128)){
-        board->cf = 1;
-    } else{
-        board->cf = 0;
+void setCF(Cpub *board, int mode){ //TODO:S/R系の実装
+    switch (mode) {
+        case _RCF:
+            board->cf = 0;
+            break;
+        case _SCF:
+            board->cf = 1;
+            break;
+        case _ADC:
+        case _SBC:
+            if((Uword)(board->calc_A.uword_A + board->calc_B.uword_B) < board->calc_A.uword_A){
+                board->cf = 1;
+            }
+            break;
+        default:
+            break;
     }
 }
 
-void setVF(Cpub *board, int flag){
-    if((unsigned int)flag > 127 || ((signed int)flag < -128) || (signed int)flag > 127){
-        board->vf = 1;
-    } else{
-        board->vf = 0;
+void setVF(Cpub *board, int mode){ //TODO:S/R系の実装
+    switch (mode) {
+        case _ADD:
+        case _ADC:
+        case _SUB:
+        case _SBC:
+        case _CMP:
+            if((board->calc_A.sword_A < 0 && board->calc_B.sword_B < 0 &&
+                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) > 0 )||
+               (board->calc_A.sword_A > 0 && board->calc_B.sword_B > 0 &&
+                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) < 0)) {
+                   board->vf = 1;
+               }
+            break;
+        case _AND:
+            board->vf = 0;
+            break;
+        case _OR:
+            board->vf = 0;
+            break;
+        case _EOR:
+            board->vf = 0;
+            break;
+        default:
+            break;
     }
 }
 
 void setNF(Cpub *board, int flag){
-    board->vf = (flag < 0 ? 1 : 0);
+    board->nf = (flag < 0 ? 1 : 0);
 }
 
 void setZF(Cpub *board, int flag){
@@ -104,48 +135,59 @@ int blanchCondition(Cpub *board, Bit flag){
     }
     return flag;
 }
+int selectAResister(Cpub *board, int load_register){
+    board->regA = (load_register ? &board->ix : &board->acc);
+    board->calc_A.uword_A = (Uword)*board->regA;
+    board->calc_A.sword_A = (Sword)*board->regA;
+    return RUN_STEP;
+}
 
-int selectResister(Cpub *board, int load_register){
+int selectBResister(Cpub *board, int load_register){
     int is_continue = RUN_STEP;
     switch (load_register) {
         case ACC:
             printf("ACC load mode\n");
-            board->reg = &board->acc;
+            board->regB = &board->acc;
             break;
         case IX:
             printf("IX load mode\n");
-            board->reg = &board->ix;
+            board->regB = &board->ix;
             break;
         case IMMEDIATE:
             printf("IMMEDIATE load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
             break;
         case P_ABSOLUTLY:
             printf("P_ABSOLUTLY load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
             break;
         case D_ABSOLUTLY:
             printf("D_ABSOLUTLY load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
             break;
         case P_INDIRECTION:
             printf("P_INDIRECTION load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
             break;
         case D_INDIRECTION:
             printf("D_INDIRECTION load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->reg = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
             break;
         default:
             fprintf(stderr, "None resister selected!\n");
             is_continue = RUN_HALT;
             break;
     }
+    if(is_continue){
+        board->calc_B.uword_B = (Uword)*board->regB;
+        board->calc_B.sword_B = (Sword)*board->regB;
+    }
+    
     return is_continue;
 }
 
@@ -155,7 +197,7 @@ int selectResister(Cpub *board, int load_register){
 int step(Cpub *board)
 {
     fetch(board);
-
+    
     board->shift_mode    = board->ir[0] & 0x03; //get low 2bit
     board->register_mode = board->ir[0] & 0x08; //get 4th bit
     board->load_register = board->ir[0] & 0x07; //get low 3bit
@@ -218,13 +260,13 @@ int step(Cpub *board)
         printf("BBC mode\n");
         Bbc(board);
     } /*else if((board->ir[0] & 0xff) == _JAL){
-        JAL(board);
-    } else if((board->ir[0] & 0xff) == _JR){
-        JR(board);
-    } */else{
-        printf("ir[0] : %d\n", board->ir[0]);
-        fprintf(stderr, "None command error!\n");
-    }
+       JAL(board);
+       } else if((board->ir[0] & 0xff) == _JR){
+       JR(board);
+       } */else{
+           printf("ir[0] : %d\n", board->ir[0]);
+           fprintf(stderr, "None command error!\n");
+       }
     return RUN_HALT;
 }
 
@@ -265,179 +307,166 @@ int Bbc(Cpub *board){
 }
 
 int Ssm(Cpub *board){
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    int msb = *p_register & 0x80; //get most significant bit
+    selectAResister(board, board->register_mode);
+    int msb = *board->regA & 0x80; //get most significant bit
     printf("msb : %d\n",msb);
     
     switch (board->shift_mode) {
         case RA:
             printf("RA mode\n");
-            *p_register = (int)pow(*p_register, -msb);
+            *board->regA = (int)pow(*board->regA, -msb);
             break;
         case LA:
             printf("LA mode\n");
-            *p_register = (int)pow(*p_register, msb);
+            *board->regA = (int)pow(*board->regA, msb);
             break;
         case RL:
             printf("RL mode\n");
-            *p_register = *p_register >> 1;
+            *board->regA = *board->regA >> 1;
             break;
         case LL:
             printf("LL mode\n");
-            *p_register = *p_register << 1;
+            *board->regA = *board->regA << 1;
             break;
         default:
             fprintf(stderr, "None shift mode!\n");
             break;
     }
-
-    setCF(board, *p_register);
-    setNF(board, *p_register);
-    setVF(board, *p_register);
-    setZF(board, *p_register);
+    
+    setCF(board, *board->regA);
+    setNF(board, *board->regA);
+    setVF(board, *board->regA);
+    setZF(board, *board->regA);
     
     return RUN_STEP;
 }
 
 int Rsm(Cpub *board){
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    int msb = *p_register & 0x80; //get most significant bit
+    selectAResister(board, board->register_mode);
+    int msb = *board->regA & 0x80; //get most significant bit
     
     switch (board->shift_mode) {
         case RA:
             printf("RA mode\n");
-            *p_register = (int)pow(*p_register, -msb);
+            *board->regA = (int)pow(*board->regA, -msb);
             break;
         case LA:
             printf("LA mode\n");
-            *p_register = (int)pow(*p_register, msb);
+            *board->regA = (int)pow(*board->regA, msb);
             break;
         case RL:
             printf("RL mode\n");
-            *p_register = *p_register >> 1;
+            *board->regA = *board->regA >> 1;
             break;
         case LL:
             printf("LL mode\n");
-            *p_register = *p_register << 1;
+            *board->regA = *board->regA << 1;
             break;
         default:
             fprintf(stderr, "None shift mode!\n");
             break;
     }
     
-    setCF(board, *p_register);
-    setNF(board, *p_register);
-    setVF(board, *p_register);
-    setZF(board, *p_register);
+    setCF(board, *board->regA);
+    setNF(board, *board->regA);
+    setVF(board, *board->regA);
+    setZF(board, *board->regA);
     
     return RUN_STEP;
 }
 
 int LD(Cpub *board){ //多分ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register = *board->reg;
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA = *board->regB;
     return RUN_STEP;
 }
 
 int ST(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *board->reg = *p_register;
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regB = *board->regA;
     return RUN_STEP;
 }
 
 int ADD(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register += *board->reg;
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA += *board->regB;
+    setVF(board, _ADD);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int ADC(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register = *p_register + *board->reg + board->cf;
-    setCF(board, *p_register);
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA = *board->regA + *board->regB + board->cf;
+    setCF(board, _ADC);
+    setVF(board, _ADC);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int SUB(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register -= *board->reg;
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);    *board->regA -= *board->regB;
+    setVF(board, _SUB);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int SBC(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register = *p_register - *board->reg - board->cf;
-    setCF(board, *p_register);
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    board->regA = (board->register_mode ? &board->ix : &board->acc);
+    *board->regA = *board->regA - *board->regB - board->cf;
+    setCF(board, _SBC);
+    setVF(board, _SBC);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int CMP(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register -= *board->reg;
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA -= *board->regB;
+    setVF(board, _CMP);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int AND(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register &= *board->reg;
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA &= *board->regB;
+    setVF(board, _AND);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int OR(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register |= *board->reg;
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA |= *board->regB;
+    setVF(board, _OR);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 
 int EOR(Cpub *board){ //ok
-    if(!selectResister(board, board->load_register)){return RUN_HALT;}
-    Uword *p_register;
-    p_register = (board->register_mode ? &board->ix : &board->acc);
-    *p_register ^= *board->reg;
-    setVF(board, *p_register);
-    setNF(board, *p_register);
-    setZF(board, *p_register);
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    selectAResister(board, board->register_mode);
+    *board->regA ^= *board->regB;
+    setVF(board, _EOR);
+    setNF(board, *board->regA);
+    setZF(board, *board->regA);
     return RUN_STEP;
 }
 

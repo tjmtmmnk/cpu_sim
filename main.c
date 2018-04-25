@@ -75,6 +75,14 @@ void initializeBoard(Cpub *board){
     for (int i=0; i<MEMORY_SIZE;i++) {
         board->mem[i] = 0x00;
     }
+    board->calc_A.uword_A = 0;
+    board->calc_A.sword_A = 0;
+    board->calc_B.uword_B = 0;
+    board->calc_B.sword_B = 0;
+    board->cf = 0;
+    board->vf = 0;
+    board->nf = 0;
+    board->zf = 0;
 }
 
 /*=============================================================================

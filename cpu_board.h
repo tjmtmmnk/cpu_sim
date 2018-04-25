@@ -90,7 +90,8 @@ typedef struct cpuboard {
     Uword acc;
     Uword ix;
     Uword ir[2];
-    Uword *reg;
+    Uword *regA;
+    Uword *regB;
     Bit   cf, vf, nf, zf;
     IOBuf *ibuf;
     IOBuf *obuf;
@@ -100,15 +101,23 @@ typedef struct cpuboard {
     Uword register_mode;
     Uword load_register;
     Uword shift_mode;
+    struct calculated_A{
+        Uword uword_A;
+        Sword sword_A;
+    } calc_A;
+    struct calculated_B{
+        Uword uword_B;
+        Sword sword_B;
+    } calc_B;
 } Cpub;
-
 
 /*=============================================================================
  *   Top Function of an Instruction Simulation
  *===========================================================================*/
 #define    RUN_HALT    0
 #define    RUN_STEP    1
-int selectResister(Cpub *, int);
+int selectAResister(Cpub *, int);
+int selectBResister(Cpub *, int);
 int step(Cpub *);
 int HLT(Cpub *);
 int NOP(Cpub *);
