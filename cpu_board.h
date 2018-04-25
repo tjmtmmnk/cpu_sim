@@ -69,11 +69,20 @@ typedef unsigned char    Bit;
 #define _AND 0xe0
 #define _OR  0xd0
 #define _EOR 0xc0
-#define _SSM 0x40
+
 #define _RSM 0x40
 #define _BBC 0x03
 #define _JAL 0x0a
 #define _JR  0x0b
+//独自定義
+#define _SRA 0x11
+#define _SLA 0x12
+#define _SRL 0x13
+#define _SLL 0x14
+#define _RRA 0x15
+#define _RLA 0x16
+#define _RRL 0x17
+#define _RLL 0x19
 
 
 

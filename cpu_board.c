@@ -18,16 +18,27 @@ void fetch(Cpub *board){
         return;
     }
     board->ir[0] = board->mem[board->pc++];
-    printf("pc : %d\n",board->pc);
 }
 
-void setCF(Cpub *board, int mode){ //TODO:S/R系の実装
+void setCF(Cpub *board, int mode){ //符号無しの判定
     switch (mode) {
         case _RCF:
             board->cf = 0;
             break;
         case _SCF:
             board->cf = 1;
+            break;
+        case _SRA:
+        case _SRL:
+        case _RRA:
+        case _RRL:
+            board->cf = board->calc_A.sword_A & 1;
+            break;
+        case _SLA:
+        case _SLL:
+        case _RLA:
+        case _RLL:
+            board->cf = (board->calc_A.sword_A>>7) & 1;
             break;
         case _ADC:
         case _SBC:
@@ -40,27 +51,37 @@ void setCF(Cpub *board, int mode){ //TODO:S/R系の実装
     }
 }
 
-void setVF(Cpub *board, int mode){ //TODO:S/R系の実装
+void setVF(Cpub *board, int mode){ //符号付きの判定
     switch (mode) {
         case _ADD:
         case _ADC:
         case _SUB:
         case _SBC:
         case _CMP:
-            if((board->calc_A.sword_A < 0 && board->calc_B.sword_B < 0 &&
-                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) > 0 )||
-               (board->calc_A.sword_A > 0 && board->calc_B.sword_B > 0 &&
-                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) < 0)) {
+            if((board->calc_A.sword_A <= 0 && board->calc_B.sword_B <= 0 &&
+                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) >= 0 )||
+               (board->calc_A.sword_A >= 0 && board->calc_B.sword_B >= 0 &&
+                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) <= 0)) {
                    board->vf = 1;
                }
+            if(board->calc_A.sword_A == 0 && board->calc_B.sword_B == 0 &&
+               (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) == 0){
+                board->vf = 0;
+            }
+            break;
+        case _SLA:
+        case _RLA:
+            board->vf = (board->calc_A.sword_A>>7) & 1;
             break;
         case _AND:
-            board->vf = 0;
-            break;
         case _OR:
-            board->vf = 0;
-            break;
         case _EOR:
+        case _SRA:
+        case _SRL:
+        case _SLL:
+        case _RRA:
+        case _RRL:
+        case _RLL:
             board->vf = 0;
             break;
         default:
@@ -250,10 +271,10 @@ int step(Cpub *board)
     } else if((board->ir[0] & 0xf0) == _EOR){
         printf("EOR mode\n");
         EOR(board);
-    } else if(((board->ir[0] & 0xf0) == _SSM) && ((board->ir[0] & 0x04) == 0)){
+    } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 0)){ //SSM mode
         printf("SSM mode\n");
         Ssm(board);
-    } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0] & 0x04) == 1)){
+    } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 1)){
         printf("RSM mode\n");
         Rsm(board);
     } else if((board->ir[0] & 0xf0) == _BBC){
@@ -308,34 +329,38 @@ int Bbc(Cpub *board){
 
 int Ssm(Cpub *board){
     selectAResister(board, board->register_mode);
-    int msb = *board->regA & 0x80; //get most significant bit
-    printf("msb : %d\n",msb);
     
     switch (board->shift_mode) {
         case RA:
             printf("RA mode\n");
-            *board->regA = (int)pow(*board->regA, -msb);
+            *board->regA = *board->regA >> 1;
+            setCF(board, _SRA);
+            setVF(board, _SRA);
             break;
         case LA:
             printf("LA mode\n");
-            *board->regA = (int)pow(*board->regA, msb);
+            *board->regA = *board->regA << 1;
+            setCF(board, _SLA);
+            setVF(board, _SLA);
             break;
         case RL:
             printf("RL mode\n");
             *board->regA = *board->regA >> 1;
+            setCF(board, _SRL);
+            setVF(board, _SRL);
             break;
         case LL:
             printf("LL mode\n");
             *board->regA = *board->regA << 1;
+            setCF(board, _SLL);
+            setVF(board, _SLL);
             break;
         default:
             fprintf(stderr, "None shift mode!\n");
             break;
     }
-    
-    setCF(board, *board->regA);
+
     setNF(board, *board->regA);
-    setVF(board, *board->regA);
     setZF(board, *board->regA);
     
     return RUN_STEP;
@@ -343,33 +368,44 @@ int Ssm(Cpub *board){
 
 int Rsm(Cpub *board){
     selectAResister(board, board->register_mode);
-    int msb = *board->regA & 0x80; //get most significant bit
     
     switch (board->shift_mode) {
         case RA:
             printf("RA mode\n");
-            *board->regA = (int)pow(*board->regA, -msb);
+            *board->regA = *board->regA >> 1;
+            setCF(board, _RRA);
+            setVF(board, _RRA);
+            *board->regA |= ((*board->regA>>7) | board->cf) << 7;
             break;
         case LA:
             printf("LA mode\n");
-            *board->regA = (int)pow(*board->regA, msb);
+            *board->regA = *board->regA << 1;
+            setCF(board, _RLA);
+            setVF(board, _RLA);
+            *board->regA |= ((*board->regA&0x01) | board->cf);
             break;
         case RL:
             printf("RL mode\n");
+            Bit lsb = *board->regA & 0x01;
             *board->regA = *board->regA >> 1;
+            setCF(board, _RRL);
+            setVF(board, _RRL);
+            *board->regA |= ((*board->regA>>7) | lsb) << 7;
             break;
         case LL:
             printf("LL mode\n");
+            Bit msb = (*board->regA>>7) & 1;
             *board->regA = *board->regA << 1;
+            setCF(board, _RLL);
+            setVF(board, _RLL);
+            *board->regA |= ((*board->regA&0x01) | msb);
             break;
         default:
             fprintf(stderr, "None shift mode!\n");
             break;
     }
     
-    setCF(board, *board->regA);
     setNF(board, *board->regA);
-    setVF(board, *board->regA);
     setZF(board, *board->regA);
     
     return RUN_STEP;
