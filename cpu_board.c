@@ -175,6 +175,10 @@ int selectBResister(Cpub *board, int load_register){
             board->regB = &board->ix;
             break;
         case IMMEDIATE:
+            if(board->ir[0] == _JAL){
+                board->regB = &board->mem[board->pc++];
+                break;
+            }
             printf("IMMEDIATE load mode\n");
             board->ir[1] = board->mem[board->pc++];
             board->regB = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
@@ -220,7 +224,7 @@ int step(Cpub *board)
     fetch(board);
     
     board->shift_mode    = board->ir[0] & 0x03; //get low 2bit
-    board->register_mode = board->ir[0] & 0x08; //get 4th bit
+    board->register_mode = (board->ir[0]>>3) & 1; //get 4th bit
     board->load_register = board->ir[0] & 0x07; //get low 3bit
     
     if((board->ir[0] & 0xf8) == _NOP){
@@ -271,7 +275,7 @@ int step(Cpub *board)
     } else if((board->ir[0] & 0xf0) == _EOR){
         printf("EOR mode\n");
         EOR(board);
-    } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 0)){ //SSM mode
+    } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 0)){
         printf("SSM mode\n");
         Ssm(board);
     } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 1)){
@@ -280,14 +284,16 @@ int step(Cpub *board)
     } else if((board->ir[0] & 0xf0) == _BBC){
         printf("BBC mode\n");
         Bbc(board);
-    } /*else if((board->ir[0] & 0xff) == _JAL){
-       JAL(board);
-       } else if((board->ir[0] & 0xff) == _JR){
-       JR(board);
-       } */else{
-           printf("ir[0] : %d\n", board->ir[0]);
-           fprintf(stderr, "None command error!\n");
-       }
+    } else if((board->ir[0] & 0xff) == _JAL){
+        printf("JAL mode\n");
+        JAL(board);
+    } else if((board->ir[0] & 0xff) == _JR){
+        printf("JR mode\n");
+        JR(board);
+    } else{
+        printf("ir[0] : %d\n", board->ir[0]);
+        fprintf(stderr, "None command error!\n");
+    }
     return RUN_HALT;
 }
 
@@ -327,7 +333,7 @@ int Bbc(Cpub *board){
     return RUN_STEP;
 }
 
-int Ssm(Cpub *board){
+int Ssm(Cpub *board){//多分ok
     selectAResister(board, board->register_mode);
     
     switch (board->shift_mode) {
@@ -359,14 +365,14 @@ int Ssm(Cpub *board){
             fprintf(stderr, "None shift mode!\n");
             break;
     }
-
+    
     setNF(board, *board->regA);
     setZF(board, *board->regA);
     
     return RUN_STEP;
 }
 
-int Rsm(Cpub *board){
+int Rsm(Cpub *board){ //多分ok
     selectAResister(board, board->register_mode);
     
     switch (board->shift_mode) {
@@ -506,5 +512,15 @@ int EOR(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int JAL(Cpub *board);
-int JR(Cpub *board);
+int JAL(Cpub *board){
+    if(!selectBResister(board, board->load_register)){return RUN_HALT;}
+    board->acc = board->pc;
+    board->pc = *board->regB;
+    step(board);
+    return JR(board);
+}
+
+int JR(Cpub *board){
+    board->pc = board->acc;
+    return RUN_STEP;
+}
