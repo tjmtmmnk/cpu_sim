@@ -85,6 +85,7 @@ void initializeBoard(Cpub *board){
     board->vf = 0;
     board->nf = 0;
     board->zf = 0;
+    board->immediate_reg = 0;
 }
 
 /*=============================================================================

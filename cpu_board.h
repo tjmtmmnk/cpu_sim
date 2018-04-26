@@ -71,7 +71,7 @@ typedef unsigned char    Bit;
 #define _EOR 0xc0
 
 #define _RSM 0x40
-#define _BBC 0x03
+#define _BBC 0x30
 #define _JAL 0x0a
 #define _JR  0x0b
 //独自定義
@@ -110,6 +110,7 @@ typedef struct cpuboard {
     Uword register_mode;
     Uword load_register;
     Uword shift_mode;
+    Uword immediate_reg;
     struct calculated_A{
         Uword uword_A;
         Sword sword_A;

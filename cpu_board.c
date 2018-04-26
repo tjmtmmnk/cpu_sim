@@ -102,51 +102,67 @@ int blanchCondition(Cpub *board, Bit flag){
     
     switch (flag) {
         case A:
+            printf("A flag\n");
             judge = TRUE;
             break;
         case VF:
+            printf("VF flag\n");
             judge = (board->vf ? TRUE : FALSE);
             break;
         case NZ:
+            printf("NZ flag\n");
             judge = (board->zf ? FALSE : TRUE);
             break;
         case Z:
+            printf("Z flag\n");
             judge = (board->zf ? TRUE : FALSE);
             break;
         case ZP:
+            printf("ZP flag\n");
             judge = (board->nf ? FALSE : TRUE);
             break;
         case N:
+            printf("N flag\n");
             judge = (board->nf ? TRUE : FALSE);
             break;
         case P:
+            printf("P flag\n");
             judge = (board->vf | board->zf ? FALSE : TRUE);
             break;
         case ZN:
+            printf("ZN flag\n");
             judge = (board->vf | board->zf ? TRUE : FALSE);
             break;
         case NI:
+            printf("NI flag\n");
             judge = (board->ibuf->flag ? FALSE : TRUE);
             break;
         case NO:
+            printf("NO flag\n");
             judge = (board->obuf->flag ? TRUE : FALSE);
             break;
         case NC:
+            printf("NC flag\n");
             judge = (board->cf ? FALSE : TRUE);
             break;
         case C:
+            printf("C flag\n");
             judge = (board->cf ? TRUE : FALSE);
             break;
         case GE:
+            printf("GE flag\n");
             judge = (board->vf ^ board->nf ? FALSE : TRUE);
             break;
         case LT:
+            printf("LT flag\n");
             judge = (board->vf ^ board->nf ? TRUE : FALSE);
             break;
         case GT:
+            printf("GT flag\n");
             judge = ((board->vf ^ board->nf) | board->zf ? FALSE : TRUE);
             break;
         case LE:
+            printf("LE flag\n");
             judge = ((board->vf ^ board->nf) | board->zf ? TRUE : FALSE);
             break;
         default:
@@ -154,7 +170,7 @@ int blanchCondition(Cpub *board, Bit flag){
             judge = FALSE;
             break;
     }
-    return flag;
+    return judge;
 }
 int selectAResister(Cpub *board, int load_register){
     board->regA = (load_register ? &board->ix : &board->acc);
@@ -181,7 +197,8 @@ int selectBResister(Cpub *board, int load_register){
             }
             printf("IMMEDIATE load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->regB = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
+            board->immediate_reg = board->ir[1];
+            board->regB = &board->immediate_reg;
             break;
         case P_ABSOLUTLY:
             printf("P_ABSOLUTLY load mode\n");
@@ -328,6 +345,7 @@ int SCF(Cpub *board){
 int Bbc(Cpub *board){
     int condition = blanchCondition(board, board->ir[0] & 0x0f); //get low 4bit
     if(condition){
+        board->ir[1] = board->mem[board->pc];
         board->pc = board->ir[1];
     }
     return RUN_STEP;
@@ -454,7 +472,8 @@ int ADC(Cpub *board){ //ok
 
 int SUB(Cpub *board){ //ok
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
-    selectAResister(board, board->register_mode);    *board->regA -= *board->regB;
+    selectAResister(board, board->register_mode);
+    *board->regA -= *board->regB;
     setVF(board, _SUB);
     setNF(board, *board->regA);
     setZF(board, *board->regA);
