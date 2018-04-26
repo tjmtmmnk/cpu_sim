@@ -67,6 +67,8 @@ int init_cpu(void)
 {
     cpuboard[0].ibuf = &(cpuboard[1].obuf);
     cpuboard[1].ibuf = &(cpuboard[0].obuf);
+    cpuboard[0].obuf = &(cpuboard[1].ibuf);
+    cpuboard[1].obuf = &(cpuboard[0].ibuf);
     return 0;
 }
 
@@ -244,6 +246,7 @@ void display_regs(Cpub *board)
             DispRegVec(board->acc),DispRegVec(board->ix),
             board->cf,board->vf,board->nf,board->zf);
     fprintf(stderr,"\tibuf=%x:0x%02x(%d,%u)\n",board->ibuf->flag,DispRegVec(board->ibuf->buf));
+    fprintf(stderr,"\tobuf=%x:0x%02x(%d,%u)\n",board->obuf->flag,DispRegVec(board->obuf->buf));
 }
 
 
