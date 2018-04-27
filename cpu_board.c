@@ -17,6 +17,7 @@ void fetch(Cpub *board){
         fprintf(stderr, "memory index error");
         return;
     }
+    printf("pc : %d\n", board->pc);
     board->ir[0] = board->mem[board->pc++];
 }
 
@@ -44,6 +45,8 @@ void setCF(Cpub *board, int mode){ //符号無しの判定
         case _SBC:
             if((Uword)(board->calc_A.uword_A + board->calc_B.uword_B) < board->calc_A.uword_A){
                 board->cf = 1;
+            } else{
+                board->cf = 0;
             }
             break;
         default:
@@ -63,6 +66,8 @@ void setVF(Cpub *board, int mode){ //符号付きの判定
                (board->calc_A.sword_A >= 0 && board->calc_B.sword_B >= 0 &&
                 (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) <= 0)) {
                    board->vf = 1;
+               }else{
+                   board->vf = 0;
                }
             if(board->calc_A.sword_A == 0 && board->calc_B.sword_B == 0 &&
                (Sword)(board->calc_A.sword_A + board->calc_B.sword_B) == 0){
@@ -347,6 +352,7 @@ int Bbc(Cpub *board){
     if(condition){
         board->ir[1] = board->mem[board->pc];
         board->pc = board->ir[1];
+        printf("next pc : %d\n",board->pc);
     }
     return RUN_STEP;
 }
@@ -536,7 +542,7 @@ int JAL(Cpub *board){
     board->acc = board->pc;
     board->pc = *board->regB;
     step(board);
-    return JR(board);
+    return RUN_STEP;
 }
 
 int JR(Cpub *board){
