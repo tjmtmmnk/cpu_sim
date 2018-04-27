@@ -353,6 +353,8 @@ int Bbc(Cpub *board){
         board->ir[1] = board->mem[board->pc];
         board->pc = board->ir[1];
         printf("next pc : %d\n",board->pc);
+    } else{
+        board->pc++;
     }
     return RUN_STEP;
 }

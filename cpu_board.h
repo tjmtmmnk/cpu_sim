@@ -72,8 +72,8 @@ typedef unsigned char    Bit;
 
 #define _RSM 0x40
 #define _BBC 0x30
-#define _JAL 0x0a
-#define _JR  0x0b
+#define _JAL 0xfa
+#define _JR  0xfb
 //独自定義
 #define _SRA 0x11
 #define _SLA 0x12
