@@ -1,0 +1,151 @@
+CPU0,PC=0x0> r pra4.txt
+CPU0,PC=0x0> s ix 2
+	acc=0x00(0,0)    ix=0x02(2,2)   cf=0 vf=0 nf=0 zf=0
+	ibuf=90:0x50(80,80)
+	obuf=98:0x50(80,80)
+CPU0,PC=0x0> i
+pc : 0
+ST mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x2> s acc 0xa0
+	acc=0xa0(-96,160)    ix=0x02(2,2)   cf=0 vf=0 nf=0 zf=0
+	ibuf=90:0x50(80,80)
+	obuf=98:0x50(80,80)
+CPU0,PC=0x2> i
+pc : 2
+ST mode
+D_INDIRECTION load mode
+CPU0,PC=0x4> s acc 0xa0
+	acc=0xa0(-96,160)    ix=0x02(2,2)   cf=0 vf=0 nf=0 zf=0
+	ibuf=90:0x50(80,80)
+	obuf=98:0x50(80,80)
+CPU0,PC=0x4> i
+pc : 4
+ST mode
+D_INDIRECTION load mode
+CPU0,PC=0x6> i
+pc : 6
+SUB mode
+IMMEDIATE load mode
+CPU0,PC=0x8> i
+pc : 8
+BBC mode
+NZ flag
+next pc : 2
+CPU0,PC=0x2> s acc 0x00
+	acc=0x00(0,0)    ix=0x01(1,1)   cf=0 vf=0 nf=0 zf=0
+	ibuf=90:0x50(80,80)
+	obuf=98:0x50(80,80)
+CPU0,PC=0x2> i
+pc : 2
+ST mode
+D_INDIRECTION load mode
+CPU0,PC=0x4> s acc 0x00
+	acc=0x00(0,0)    ix=0x01(1,1)   cf=0 vf=0 nf=0 zf=0
+	ibuf=90:0x50(80,80)
+	obuf=98:0x50(80,80)
+CPU0,PC=0x4> i
+pc : 4
+ST mode
+D_INDIRECTION load mode
+CPU0,PC=0x6> i
+pc : 6
+SUB mode
+IMMEDIATE load mode
+i
+CPU0,PC=0x8> pc : 8
+BBC mode
+NZ flag
+iCPU0,PC=0xa> 
+pc : 10
+LD mode
+D_ABSOLUTLY load mode
+CPU0,PC=0xc> i
+pc : 12
+CMP mode
+IMMEDIATE load mode
+CPU0,PC=0xe> i
+pc : 14
+BBC mode
+Z flag
+CPU0,PC=0x10> i
+pc : 16
+LD mode
+D_INDIRECTION load mode
+CPU0,PC=0x12> i
+pc : 18
+ADC mode
+D_INDIRECTION load mode
+CPU0,PC=0x14> i
+pc : 20
+ST mode
+D_INDIRECTION load mode
+CPU0,PC=0x16> i
+pc : 22
+SUB mode
+IMMEDIATE load mode
+CPU0,PC=0x18> i
+pc : 24
+BBC mode
+NZ flag
+next pc : 12
+CPU0,PC=0xc> i
+pc : 12
+CMP mode
+IMMEDIATE load mode
+CPU0,PC=0xe> i
+pc : 14
+BBC mode
+Z flag
+next pc : 26
+CPU0,PC=0x1a> i
+pc : 26
+LD mode
+D_INDIRECTION load mode
+CPU0,PC=0x1c> i
+pc : 28
+ADC mode
+D_INDIRECTION load mode
+CPU0,PC=0x1e> i
+pc : 30
+ST mode
+D_INDIRECTION load mode
+CPU0,PC=0x20> i
+pc : 32
+HLT mode
+CPU0,PC=0x21> i
+pc : 33
+NOP mode
+CPU0,PC=0x22> m
+    | 000:  7d 70 77 80 77 90 aa 01    | 008:  31 02 6d 70 fa 01 39 1a
+    | 010:  67 80 97 90 77 a0 aa 01    | 018:  31 0c 67 80 97 90 77 a0
+    | 020:  0f 00 00 00 00 00 00 00    | 028:  00 00 00 00 00 00 00 00
+    | 030:  00 00 00 00 00 00 00 00    | 038:  00 00 00 00 00 00 00 00
+    | 040:  00 00 00 00 00 00 00 00    | 048:  00 00 00 00 00 00 00 00
+    | 050:  00 00 00 00 00 00 00 00    | 058:  00 00 00 00 00 00 00 00
+    | 060:  00 00 00 00 00 00 00 00    | 068:  00 00 00 00 00 00 00 00
+    | 070:  00 00 00 00 00 00 00 00    | 078:  00 00 00 00 00 00 00 00
+    | 080:  00 00 00 00 00 00 00 00    | 088:  00 00 00 00 00 00 00 00
+    | 090:  00 00 00 00 00 00 00 00    | 098:  00 00 00 00 00 00 00 00
+    | 0a0:  00 00 00 00 00 00 00 00    | 0a8:  00 00 00 00 00 00 00 00
+    | 0b0:  00 00 00 00 00 00 00 00    | 0b8:  00 00 00 00 00 00 00 00
+    | 0c0:  00 00 00 00 00 00 00 00    | 0c8:  00 00 00 00 00 00 00 00
+    | 0d0:  00 00 00 00 00 00 00 00    | 0d8:  00 00 00 00 00 00 00 00
+    | 0e0:  00 00 00 00 00 00 00 00    | 0e8:  00 00 00 00 00 00 00 00
+    | 0f0:  00 00 00 00 00 00 00 00    | 0f8:  00 00 00 00 00 00 00 00
+    | 100:  00 00 00 00 00 00 00 00    | 108:  00 00 00 00 00 00 00 00
+    | 110:  00 00 00 00 00 00 00 00    | 118:  00 00 00 00 00 00 00 00
+    | 120:  00 00 00 00 00 00 00 00    | 128:  00 00 00 00 00 00 00 00
+    | 130:  00 00 00 00 00 00 00 00    | 138:  00 00 00 00 00 00 00 00
+    | 140:  00 00 00 00 00 00 00 00    | 148:  00 00 00 00 00 00 00 00
+    | 150:  00 00 00 00 00 00 00 00    | 158:  00 00 00 00 00 00 00 00
+    | 160:  00 00 00 00 00 00 00 00    | 168:  00 00 00 00 00 00 00 00
+    | 170:  02 00 00 00 00 00 00 00    | 178:  00 00 00 00 00 00 00 00
+    | 180:  00 00 a0 00 00 00 00 00    | 188:  00 00 00 00 00 00 00 00
+    | 190:  00 00 a0 00 00 00 00 00    | 198:  00 00 00 00 00 00 00 00
+    | 1a0:  00 01 40 00 00 00 00 00    | 1a8:  00 00 00 00 00 00 00 00
+    | 1b0:  00 00 00 00 00 00 00 00    | 1b8:  00 00 00 00 00 00 00 00
+    | 1c0:  00 00 00 00 00 00 00 00    | 1c8:  00 00 00 00 00 00 00 00
+    | 1d0:  00 00 00 00 00 00 00 00    | 1d8:  00 00 00 00 00 00 00 00
+    | 1e0:  00 00 00 00 00 00 00 00    | 1e8:  00 00 00 00 00 00 00 00
+    | 1f0:  00 00 00 00 00 00 00 00    | 1f8:  00 00 00 00 00 00 00 00

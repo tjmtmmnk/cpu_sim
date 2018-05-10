@@ -254,7 +254,7 @@ int step(Cpub *board)
     if((board->ir[0] & 0xf8) == _NOP){
         printf("NOP mode\n");
         is_continue = NOP(board);
-    } else if((board->ir[0] & 0x0f) == _HLT){
+    } else if((board->ir[0] & 0xff) == _HLT){
         printf("HLT mode\n");
         is_continue = HLT(board);
     } else if((board->ir[0] & 0xf8) == _OUT){

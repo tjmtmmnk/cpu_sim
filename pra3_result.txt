@@ -1,0 +1,95 @@
+CPU0,PC=0x0> r pra3.txt
+CPU0,PC=0x0> s ibuf 0
+	acc=0x00(0,0)    ix=0x00(0,0)   cf=0 vf=0 nf=0 zf=0
+	ibuf=1:0x00(0,0)
+	obuf=98:0x50(80,80)
+CPU0,PC=0x0> i
+pc : 0
+IN mode
+CPU0,PC=0x1> i
+pc : 1
+ST mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x3> i
+pc : 3
+ADD mode
+IMMEDIATE load mode
+CPU0,PC=0x5> i
+pc : 5
+BBC mode
+Z flag
+next pc : 20
+CPU0,PC=0x14> i
+pc : 20
+ADD mode
+IMMEDIATE load mode
+CPU0,PC=0x16> i
+pc : 22
+ST mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x18> i
+pc : 24
+LD mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x1a> i
+pc : 26
+OUT mode
+CPU0,PC=0x1b> d
+	acc=0x80(-128,128)    ix=0x00(0,0)   cf=0 vf=0 nf=0 zf=0
+	ibuf=1:0x00(0,0)
+	obuf=98:0x80(-128,128)
+CPU0,PC=0x1b> s ibuf 1
+	acc=0x80(-128,128)    ix=0x00(0,0)   cf=0 vf=0 nf=0 zf=0
+	ibuf=1:0x01(1,1)
+	obuf=98:0x80(-128,128)
+CPU0,PC=0x1b> i
+pc : 27
+SSM mode
+RL mode
+CPU0,PC=0x1c> i
+pc : 28
+ST mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x1e> i
+pc : 30
+IN mode
+CPU0,PC=0x1f> i
+pc : 31
+LD mode
+ACC load mode
+CPU0,PC=0x20> i
+pc : 32
+CMP mode
+IMMEDIATE load mode
+CPU0,PC=0x22> i
+pc : 34
+BBC mode
+Z flag
+next pc : 1
+CPU0,PC=0x1> i
+pc : 1
+ST mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x3> i
+pc : 3
+ADD mode
+IMMEDIATE load mode
+CPU0,PC=0x5> i
+pc : 5
+BBC mode
+Z flag
+CPU0,PC=0x7> i
+pc : 7
+LD mode
+D_ABSOLUTLY load mode
+CPU0,PC=0x9> i
+pc : 9
+OUT mode
+CPU0,PC=0xa> i
+pc : 10
+SSM mode
+LL mode
+CPU0,PC=0xb> d
+	acc=0x02(2,2)    ix=0x01(1,1)   cf=0 vf=0 nf=0 zf=0
+	ibuf=1:0x01(1,1)
+	obuf=98:0x01(1,1)
