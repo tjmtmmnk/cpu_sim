@@ -54,7 +54,7 @@ typedef unsigned char    Bit;
 #define LL 0b11
 
 #define _NOP 0x00
-#define _HLT 0x0c
+#define _HLT 0x0f
 #define _OUT 0x10
 #define _IN  0x18
 #define _RCF 0x20
@@ -72,9 +72,9 @@ typedef unsigned char    Bit;
 
 #define _RSM 0x40
 #define _BBC 0x30
-#define _JAL 0xfa
-#define _JR  0xfb
-//独自定義
+#define _JAL 0x0a
+#define _JR  0x0b
+//フラグを立てるときにS系R系を区別するために独自定義
 #define _SRA 0x11
 #define _SLA 0x12
 #define _SRL 0x13

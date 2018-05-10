@@ -134,7 +134,7 @@ int main()
             switch( cmd[0] ) {
                 case 'i':
                     if( step(board) == RUN_HALT ) {
-                        fprintf(stderr,"Program Halted.\n");
+//                        fprintf(stderr,"Program Halted.\n");
                     }
                     break;
                 case 'c':

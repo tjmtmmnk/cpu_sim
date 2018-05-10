@@ -245,78 +245,81 @@ int step(Cpub *board)
 {
     fetch(board);
     
-    board->shift_mode    = board->ir[0] & 0x03; //get low 2bit
+    board->shift_mode    = board->ir[0] & 0x03;   //get low 2bit
     board->register_mode = (board->ir[0]>>3) & 1; //get 4th bit
-    board->load_register = board->ir[0] & 0x07; //get low 3bit
+    board->load_register = board->ir[0] & 0x07;   //get low 3bit
+    
+    int is_continue;
     
     if((board->ir[0] & 0xf8) == _NOP){
         printf("NOP mode\n");
-        NOP(board);
-    } else if((board->ir[0] & 0xfc) == _HLT){
+        is_continue = NOP(board);
+    } else if((board->ir[0] & 0x0f) == _HLT){
         printf("HLT mode\n");
-        HLT(board);
+        is_continue = HLT(board);
     } else if((board->ir[0] & 0xf8) == _OUT){
         printf("OUT mode\n");
-        OUT(board);
+        is_continue = OUT(board);
     } else if((board->ir[0] & 0xf8) == _IN){
         printf("IN mode\n");
-        IN(board);
+        is_continue = IN(board);
     } else if((board->ir[0] & 0xf8) == _RCF){
         printf("RCF mode\n");
-        RCF(board);
+        is_continue = RCF(board);
     } else if((board->ir[0] & 0xf8) == _SCF){
         printf("SCF mode\n");
-        SCF(board);
+        is_continue = SCF(board);
     } else if((board->ir[0] & 0xf0) == _ADD){
         printf("ADD mode\n");
-        ADD(board);
+        is_continue = ADD(board);
     } else if((board->ir[0] & 0xf0) == _ADC){
         printf("ADC mode\n");
-        ADC(board);
+        is_continue = ADC(board);
     } else if((board->ir[0] & 0xf0) == _LD){
         printf("LD mode\n");
-        LD(board);
+        is_continue = LD(board);
     }  else if((board->ir[0] & 0xf0) == _ST){
         printf("ST mode\n");
-        ST(board);
+        is_continue = ST(board);
     }  else if((board->ir[0] & 0xf0) == _SUB){
         printf("SUB mode\n");
-        SUB(board);
+        is_continue = SUB(board);
     } else if((board->ir[0] & 0xf0) == _SBC){
         printf("SBC mode\n");
-        SBC(board);
+        is_continue = SBC(board);
     } else if((board->ir[0] & 0xf0) == _CMP){
         printf("CMP mode\n");
-        CMP(board);
+        is_continue = CMP(board);
     } else if((board->ir[0] & 0xf0) == _AND){
         printf("AND mode\n");
-        AND(board);
+        is_continue = AND(board);
     } else if((board->ir[0] & 0xf0) == _OR){
         printf("OR mode\n");
-        OR(board);
+        is_continue = OR(board);
     } else if((board->ir[0] & 0xf0) == _EOR){
         printf("EOR mode\n");
-        EOR(board);
+        is_continue = EOR(board);
     } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 0)){
         printf("SSM mode\n");
-        Ssm(board);
+        is_continue = Ssm(board);
     } else if(((board->ir[0] & 0xf0) == _RSM) && ((board->ir[0]>>2 & 1) == 1)){
         printf("RSM mode\n");
-        Rsm(board);
+        is_continue = Rsm(board);
     } else if((board->ir[0] & 0xf0) == _BBC){
         printf("BBC mode\n");
-        Bbc(board);
+        is_continue = Bbc(board);
     } else if((board->ir[0] & 0xff) == _JAL){
         printf("JAL mode\n");
-        JAL(board);
+        is_continue = JAL(board);
     } else if((board->ir[0] & 0xff) == _JR){
         printf("JR mode\n");
-        JR(board);
+        is_continue = JR(board);
     } else{
         printf("ir[0] : %d\n", board->ir[0]);
         fprintf(stderr, "None command error!\n");
+        is_continue = RUN_HALT;
     }
-    return RUN_HALT;
+    return is_continue;
 }
 
 int HLT(Cpub *board){
@@ -359,7 +362,7 @@ int Bbc(Cpub *board){
     return RUN_STEP;
 }
 
-int Ssm(Cpub *board){//多分ok
+int Ssm(Cpub *board){
     selectAResister(board, board->register_mode);
     
     switch (board->shift_mode) {
@@ -398,7 +401,7 @@ int Ssm(Cpub *board){//多分ok
     return RUN_STEP;
 }
 
-int Rsm(Cpub *board){ //多分ok
+int Rsm(Cpub *board){
     selectAResister(board, board->register_mode);
     
     switch (board->shift_mode) {
@@ -506,6 +509,7 @@ int CMP(Cpub *board){ //ok
     setVF(board, _CMP);
     setNF(board, *board->regA);
     setZF(board, *board->regA);
+    *board->regA += *board->regB;
     return RUN_STEP;
 }
 
