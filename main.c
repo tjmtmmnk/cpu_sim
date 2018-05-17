@@ -67,8 +67,6 @@ int init_cpu(void)
 {
     cpuboard[0].ibuf = &(cpuboard[1].obuf);
     cpuboard[1].ibuf = &(cpuboard[0].obuf);
-    cpuboard[0].obuf = &(cpuboard[1].ibuf);
-    cpuboard[1].obuf = &(cpuboard[0].ibuf);
     return 0;
 }
 
@@ -88,6 +86,8 @@ void initializeBoard(Cpub *board){
     board->nf = 0;
     board->zf = 0;
     board->immediate_reg = 0;
+//    board->ibuf->flag = 0;
+//    board->obuf->flag = 0;
 }
 
 /*=============================================================================
@@ -246,7 +246,7 @@ void display_regs(Cpub *board)
             DispRegVec(board->acc),DispRegVec(board->ix),
             board->cf,board->vf,board->nf,board->zf);
     fprintf(stderr,"\tibuf=%x:0x%02x(%d,%u)\n",board->ibuf->flag,DispRegVec(board->ibuf->buf));
-    fprintf(stderr,"\tobuf=%x:0x%02x(%d,%u)\n",board->obuf->flag,DispRegVec(board->obuf->buf));
+    fprintf(stderr,"\tobuf=%x:0x%02x(%d,%u)\n",board->obuf.flag,DispRegVec(board->obuf.buf));
 }
 
 
@@ -280,10 +280,10 @@ void set_reg(Cpub *board, char *regname, char *strval)
                                 else
                                     if( !strcmp(regname,"if") )    reg = &(board->ibuf->flag), max = 1;
                                     else
-                                        if( !strcmp(regname,"obuf") )    reg = &(board->obuf->buf), max = 0xff,
-                                            board->obuf->flag = 1;
+                                        if( !strcmp(regname,"obuf") )    reg = &(board->obuf.buf), max = 0xff,
+                                            board->obuf.flag = 1;
                                         else
-                                            if( !strcmp(regname,"of") )    reg = &(board->obuf->flag), max = 1;
+                                            if( !strcmp(regname,"of") )    reg = &(board->obuf.flag), max = 1;
                                             else {
                                                 fprintf(stderr,"Unknown register name: %s\n",regname);
                                                 return;

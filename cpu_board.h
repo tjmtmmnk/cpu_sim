@@ -103,7 +103,7 @@ typedef struct cpuboard {
     Uword *regB;
     Bit   cf, vf, nf, zf;
     IOBuf *ibuf;
-    IOBuf *obuf;
+    IOBuf obuf;
     Uword dmem_add;
     Uword mem[MEMORY_SIZE];    /* 0XX:Program, 1XX:Data */
     Uword data_size;

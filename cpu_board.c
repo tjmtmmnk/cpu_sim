@@ -144,7 +144,8 @@ int blanchCondition(Cpub *board, Bit flag){
             break;
         case NO:
             printf("NO flag\n");
-            judge = (board->obuf->flag ? TRUE : FALSE);
+            printf("obuf flag : %d\n",board->obuf.flag);
+            judge = (board->obuf.flag ? TRUE : FALSE);
             break;
         case NC:
             printf("NC flag\n");
@@ -208,7 +209,7 @@ int selectBResister(Cpub *board, int load_register){
         case P_ABSOLUTLY:
             printf("P_ABSOLUTLY load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->regB = &board->mem[board->ir[1] + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + PROGRAM_MEMORY_FRONT];
             break;
         case D_ABSOLUTLY:
             printf("D_ABSOLUTLY load mode\n");
@@ -218,7 +219,7 @@ int selectBResister(Cpub *board, int load_register){
         case P_INDIRECTION:
             printf("P_INDIRECTION load mode\n");
             board->ir[1] = board->mem[board->pc++];
-            board->regB = &board->mem[board->ir[1] + board->ix + DATA_MEMORY_FRONT];
+            board->regB = &board->mem[board->ir[1] + board->ix + PROGRAM_MEMORY_FRONT];
             break;
         case D_INDIRECTION:
             printf("D_INDIRECTION load mode\n");
@@ -227,6 +228,7 @@ int selectBResister(Cpub *board, int load_register){
             break;
         default:
             fprintf(stderr, "None resister selected!\n");
+            printf("load register : %x\n",load_register);
             is_continue = RUN_HALT;
             break;
     }
@@ -238,9 +240,6 @@ int selectBResister(Cpub *board, int load_register){
     return is_continue;
 }
 
-/*=============================================================================
- *   Simulation of a Single Instruction
- *===========================================================================*/
 int step(Cpub *board)
 {
     fetch(board);
@@ -331,12 +330,14 @@ int NOP(Cpub *board){
 }
 
 int OUT(Cpub *board){
-    board->obuf->buf = board->acc;
+    board->obuf.buf = board->acc;
+    board->obuf.flag = 1;
     return RUN_STEP;
 }
 
 int IN(Cpub *board){
     board->acc = board->ibuf->buf;
+    board->ibuf->flag = 0;
     return RUN_STEP;
 }
 
@@ -446,21 +447,21 @@ int Rsm(Cpub *board){
     return RUN_STEP;
 }
 
-int LD(Cpub *board){ //多分ok
+int LD(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA = *board->regB;
     return RUN_STEP;
 }
 
-int ST(Cpub *board){ //ok
+int ST(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regB = *board->regA;
     return RUN_STEP;
 }
 
-int ADD(Cpub *board){ //ok
+int ADD(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA += *board->regB;
@@ -470,7 +471,7 @@ int ADD(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int ADC(Cpub *board){ //ok
+int ADC(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA = *board->regA + *board->regB + board->cf;
@@ -481,7 +482,7 @@ int ADC(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int SUB(Cpub *board){ //ok
+int SUB(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA -= *board->regB;
@@ -491,7 +492,7 @@ int SUB(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int SBC(Cpub *board){ //ok
+int SBC(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     board->regA = (board->register_mode ? &board->ix : &board->acc);
     *board->regA = *board->regA - *board->regB - board->cf;
@@ -502,7 +503,7 @@ int SBC(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int CMP(Cpub *board){ //ok
+int CMP(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA -= *board->regB;
@@ -513,7 +514,7 @@ int CMP(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int AND(Cpub *board){ //ok
+int AND(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA &= *board->regB;
@@ -523,7 +524,7 @@ int AND(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int OR(Cpub *board){ //ok
+int OR(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA |= *board->regB;
@@ -533,7 +534,7 @@ int OR(Cpub *board){ //ok
     return RUN_STEP;
 }
 
-int EOR(Cpub *board){ //ok
+int EOR(Cpub *board){
     if(!selectBResister(board, board->load_register)){return RUN_HALT;}
     selectAResister(board, board->register_mode);
     *board->regA ^= *board->regB;
