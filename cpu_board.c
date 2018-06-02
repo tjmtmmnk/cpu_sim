@@ -140,6 +140,7 @@ int blanchCondition(Cpub *board, Bit flag){
             break;
         case NI:
             printf("NI flag\n");
+            printf("ibuf flag : %d\n",board->ibuf->flag);
             judge = (board->ibuf->flag ? FALSE : TRUE);
             break;
         case NO:
